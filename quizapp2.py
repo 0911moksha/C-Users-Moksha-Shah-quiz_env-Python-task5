@@ -30,6 +30,7 @@ def validate_password(password):
 #function to check if the user is unique
 def is_unique_user(username,filename):
     data = load_csv(filename)
+
     for user in data:
         if user[0] == username:
             return False #shows that the username already exists
@@ -53,33 +54,41 @@ def add_user():
         print(f"User{username} added successfully")
 #function for adding or updating questions
 def add_update_questions():
-    question_text = input("Enter question text")
     question_id = len(load_csv('questions.csv'))+1
     questions = load_csv('questions.csv')
-    questions.append([str(question_id),question_text])
-#adding options
-    print("Enter 4 options (A,B,C,D):")
-    options = []
-    for option in ['A','B','C','D']:
-        option_text = input(f"{option}:")
-        options.append(option+option_text)
-    #ensuring of exact 4 options
-    if len(options)!=4:
-        print("Error! You should provide only 4 options")
-    #Enter correct answer
-    correct_answer = input("Enter correct answer[A,B,C or D]").upper()
-    #validate correct answer
-    if not correct_answer in['A','B','C','D']:
-        print("Error!Please enter correct answer") 
+#adding question
+    question_num = 1
+    while question_num < 10:
+            que=input(f"enter question no. {question_num}")
+            choice = questions[question_num-1]
+            print(choice)
+            answer = input(" ")
+            question_num +=1
+            questions.append([str(question_num),que])
+            write_csv("questions.csv",questions)
+        #adding options
+            print("Enter 4 options (A,B,C,D):")
+            options = []
+            for option in ['A','B','C','D']:
+                option_text = input(f"{option}:")
+                options.append(option+option_text)
+            #ensuring of exact 4 options
+            if len(options)!=4:
+                print("Error! You should provide only 4 options")
+            #Enter correct answer
+            correct_answer = input("Enter correct answer[A,B,C or D]").upper()
+            #validate correct answer
+            if not correct_answer in['A','B','C','D']:
+                print("Error!Please enter correct answer") 
 
-    #marking the answer with []using dict method
-        options_dict ={'A':options[0],'B':options[1],'C':options[2],'D':options[3]}
-        options_line = [str(question_id)] +options_dict.values()
-    #ensure only one correct answer
-        options_line = [f"[{opt}]" if opt == correct_answer else opt for opt in options_line]
-        write_csv('questions.csv',add_update_questions)
-        write_csv('options.csv',[options_line])
-        print("Questions and options added/updated successfully!!")
+            #marking the answer with []using dict method
+                options_dict ={'A':options[0],'B':options[1],'C':options[2],'D':options[3]}
+                options_line = [str(question_id)] +options_dict.values()
+            #ensure only one correct answer
+                options_line = [f"[{opt}]" if opt == correct_answer else opt for opt in options_line]
+                write_csv('questions.csv',add_update_questions)
+                write_csv('options.csv',options)
+                print("Questions and options added/updated successfully!!")
     #for viewing participant results
 def view_participant_results():
     users = load_csv('users.csv')
@@ -117,7 +126,9 @@ def take_quiz(username):
         else:
             #option_line :options[i]
             #quiz logic
-            for i in enumerate(questions[1:],start =1):
+            
+         for i in enumerate(questions[1:],start =1):
+                print(i)
                 print(f"question{i}:question{1}")
                 option_line =options[1]
                 print(f"A :{option_line[1]}")
@@ -131,15 +142,20 @@ def take_quiz(username):
             continue
                  
         #validating the correct answer against the other options
-        correct_answer=option_line[1:].index(f"[{answer}]")  # Find the correct answer
-        if answer == option_line[correct_answer+1]:
-            score +=1
-            print("Correct")
+        if f"{answer}" in options[1:]:
+            answer=options[1:].index(f"{answer}")  # Find the correct answer
         else:
-            print("Wrong answer!")
+            print(f"Error! the answer {answer} is not in options")    
+            
             #to check the total number of questions
         total_questions = len(questions)-1
-        percentage = (total_questions/score)*100
+        #import pdb;pdb.set_trace()
+        if score!=0: 
+            percentage = (total_questions/score)*100
+        else:
+            percentage = 0
+            return
+            #print("Score is 0 cannot calculate the percentage")
         result = f"{percentage}%"
         print("You are passed",result)
         #saving score in user's csv file
